@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="A weather-aware travel dashboard by Rida Boubakr for PM Accelerator Backend Tech Assessment #2."
+    />
+    <title>Weather Atlas · Rida Boubakr</title>
+    <link rel="stylesheet" href="/static/dashboard.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/dashboard" aria-label="Weather Atlas home">
+        <span class="brand-mark" aria-hidden="true">WA</span>
+        <span>
+          <strong>Weather Atlas</strong>
+          <small>by Rida Boubakr</small>
+        </span>
+      </a>
+      <nav aria-label="Project links">
+        <span class="assessment-badge">Backend Assessment #2</span>
+        <a href="/docs" target="_blank" rel="noreferrer">API docs ↗</a>
+        <a href="/about" target="_blank" rel="noreferrer">About</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> Weather intelligence for better days out</p>
+          <h1 id="hero-title">Make the weather<br />part of the plan.</h1>
+          <p class="hero-intro">
+            Explore a destination, compare the forecast, and find the clearest day
+            for somewhere worth remembering.
+          </p>
+        </div>
+
+        <form id="weather-form" class="search-panel" novalidate>
+          <div class="field location-field">
+            <label for="location">Where are you going?</label>
+            <div class="input-shell">
+              <span aria-hidden="true">⌖</span>
+              <input
+                id="location"
+                name="location"
+                type="search"
+                placeholder="City, town, or postal code"
+                autocomplete="off"
+                minlength="2"
+                maxlength="200"
+                required
+              />
+            </div>
+            <input id="location-id" type="hidden" />
+            <div id="location-candidates" class="candidate-list" role="listbox" hidden></div>
+            <p id="selected-location" class="selected-location" hidden></p>
+          </div>
+          <div class="date-fields">
+            <div class="field">
+              <label for="start-date">From</label>
+              <input id="start-date" name="start_date" type="date" required />
+            </div>
+            <span class="date-arrow" aria-hidden="true">→</span>
+            <div class="field">
+              <label for="end-date">Until</label>
+              <input id="end-date" name="end_date" type="date" required />
+            </div>
+          </div>
+          <button id="explore-button" class="primary-button" type="submit">
+            <span>Explore weather</span><span aria-hidden="true">↗</span>
+          </button>
+          <p class="form-note">Up to 16 days · Real Open-Meteo forecast · Saved automatically</p>
+        </form>
+      </section>
+
+      <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+
+      <section class="product-grid">
+        <div class="workspace">
+          <div id="empty-state" class="empty-state">
+            <div class="empty-orbit" aria-hidden="true">
+              <span class="sun"></span><span class="cloud">☁</span>
+            </div>
+            <div>
+              <p class="eyebrow"><span></span> Ready when you are</p>
+              <h2>Your next good-weather window starts here.</h2>
+              <p>Search a place above, or open one of your saved forecasts.</p>
+            </div>
+          </div>
+
+          <div id="record-view" hidden>
+            <section class="location-summary">
+              <div>
+                <p class="section-kicker">Forecast snapshot</p>
+                <h2 id="resolved-location">—</h2>
+                <div id="location-meta" class="meta-row"></div>
+              </div>
+              <div class="record-actions">
+                <button id="refresh-record" class="quiet-button" type="button">↻ Refresh</button>
+                <button id="delete-record" class="danger-button" type="button">Delete</button>
+              </div>
+            </section>
+
+            <section id="planner-card" class="planner-card" aria-labelledby="planner-title">
+              <div class="planner-copy">
+                <p class="planner-kicker">Weather-aware outing planner</p>
+                <h2 id="planner-title">Finding your best day…</h2>
+                <p id="planner-summary">Weighing rain, conditions, comfort, and wind.</p>
+                <div id="planner-reasons" class="reason-list"></div>
+              </div>
+              <div id="score-ring" class="score-ring" style="--score: 0">
+                <strong id="planner-score">—</strong>
+                <span>out of 100</span>
+              </div>
+              <div id="score-factors" class="score-factors"></div>
+            </section>
+
+            <section class="content-section" aria-labelledby="forecast-heading">
+              <div class="section-heading">
+                <div>
+                  <p class="section-kicker">Daily outlook</p>
+                  <h2 id="forecast-heading">Weather at a glance</h2>
+                </div>
+                <p id="date-range-label" class="section-note"></p>
+              </div>
+              <div id="weather-days" class="weather-days"></div>
+            </section>
+
+            <section class="content-section" aria-labelledby="places-heading">
+              <div class="section-heading">
+                <div>
+                  <p class="section-kicker">Around the destination</p>
+                  <h2 id="places-heading">Places worth stepping outside for</h2>
+                </div>
+                <p class="section-note">From nearby Wikipedia articles</p>
+              </div>
+              <div id="nearby-places" class="place-grid"></div>
+            </section>
+          </div>
+        </div>
+
+        <aside class="saved-panel" aria-labelledby="saved-heading">
+          <div class="saved-header">
+            <div>
+              <p class="section-kicker">SQLite collection</p>
+              <h2 id="saved-heading">Saved forecasts</h2>
+            </div>
+            <span id="record-count" class="count-badge">0</span>
+          </div>
+          <div class="export-row">
+            <a class="export-button" href="/weather/export?format=json">JSON ↓</a>
+            <a class="export-button" href="/weather/export?format=csv">CSV ↓</a>
+          </div>
+          <div id="saved-records" class="saved-records"></div>
+        </aside>
+      </section>
+    </main>
+
+    <footer>
+      <p>Designed and engineered by <strong>Rida Boubakr</strong></p>
+      <p>PM Accelerator AI Engineer Technical Assessment · Backend Tech Assessment #2</p>
+    </footer>
+
+    <script src="/static/dashboard.js" defer></script>
+  </body>
+</html>
